@@ -1,6 +1,6 @@
 {
-  "short_name": "ProCalc",
-  "name": "Professional Stake Manager",
+  "short_name": "Quantum",
+  "name": "Quantum Profit Manager",
   "icons": [
     {
       "src": "https://flaticon.com",
@@ -9,7 +9,7 @@
     }
   ],
   "start_url": "index.html",
-  "background_color": "#121212",
+  "background_color": "#05070a",
   "display": "standalone",
   "scope": "./",
   "theme_color": "#f5e000"

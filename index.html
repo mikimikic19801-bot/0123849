@@ -3,162 +3,355 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ultimate Betting Manager</title>
+    <title>Pro-Bet Quantum | Stake Manager</title>
+    <link href="https://googleapis.com" rel="stylesheet">
     <style>
         :root {
-            --bg: #0b0e14;
-            --card: #161b22;
-            --primary: #58a6ff;
-            --success: #238636;
-            --danger: #da3633;
-            --text: #c9d1d9;
+            --bg-deep: #080a0f;
+            --accent: #6366f1;
+            --accent-glow: rgba(99, 102, 241, 0.4);
+            --success: #10b981;
+            --danger: #ef4444;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
         }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; }
-        .container { max-width: 600px; margin: auto; }
-        .card { background: var(--card); border: 1px solid #30363d; border-radius: 12px; padding: 20px; margin-bottom: 20px; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        h2 { margin-top: 0; color: var(--primary); font-size: 18px; text-transform: uppercase; }
-        label { display: block; font-size: 12px; color: #8b949e; margin-bottom: 5px; }
-        input { width: 100%; background: #0d1117; border: 1px solid #30363d; border-radius: 6px; padding: 10px; color: white; box-sizing: border-box; font-size: 16px; }
-        .main-display { text-align: center; padding: 20px; background: rgba(88, 166, 255, 0.1); border-radius: 10px; border: 1px dashed var(--primary); margin: 20px 0; }
-        .main-display span { font-size: 36px; font-weight: bold; color: white; display: block; }
-        .btn { border: none; border-radius: 6px; padding: 15px; font-weight: bold; cursor: pointer; font-size: 14px; width: 100%; transition: 0.2s; }
-        .btn-win { background: var(--success); color: white; }
-        .btn-loss { background: var(--danger); color: white; }
-        .btn-reset { background: transparent; color: #8b949e; border: 1px solid #30363d; margin-top: 10px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 13px; }
-        th { text-align: left; color: #8b949e; border-bottom: 1px solid #30363d; padding: 10px; }
-        td { padding: 10px; border-bottom: 1px solid #21262d; }
-        .badge-win { color: var(--success); }
-        .badge-loss { color: var(--danger); }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: radial-gradient(circle at top right, #1e1b4b, #080a0f);
+            color: var(--text-main);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .wrapper {
+            width: 100%;
+            max-width: 480px;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .glass-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 18px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            background: linear-gradient(to right, #fff, var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 0;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--success);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--success);
+        }
+
+        .main-stat-label {
+            font-size: 12px;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .bank-amount {
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 20px;
+        }
+
+        .grid-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .mini-card {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 16px;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .label-sm { font-size: 11px; color: var(--text-dim); margin-bottom: 4px; }
+        .val-md { font-size: 16px; font-weight: 600; }
+
+        .input-group {
+            margin-top: 25px;
+        }
+
+        .input-wrapper {
+            position: relative;
+            margin-bottom: 15px;
+        }
+
+        input {
+            width: 100%;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 14px 16px;
+            border-radius: 12px;
+            color: white;
+            font-size: 16px;
+            font-family: inherit;
+            transition: all 0.3s;
+            box-sizing: border-box;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--accent);
+            background: rgba(30, 41, 59, 0.8);
+            box-shadow: 0 0 15px var(--accent-glow);
+        }
+
+        .stake-banner {
+            background: linear-gradient(135deg, var(--accent), #4f46e5);
+            border-radius: 20px;
+            padding: 25px;
+            text-align: center;
+            margin: 25px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stake-banner::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+        }
+
+        .stake-label { font-size: 13px; font-weight: 600; opacity: 0.9; text-transform: uppercase; margin-bottom: 10px; display: block; }
+        .stake-value { font-size: 42px; font-weight: 800; display: block; }
+
+        .action-btns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 16px;
+            border-radius: 14px;
+            border: none;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-win { background: var(--success); color: white; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3); }
+        .btn-loss { background: var(--danger); color: white; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3); }
+        .btn:active { transform: scale(0.96); }
+
+        .history-section {
+            margin-top: 30px;
+        }
+
+        .history-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 14px;
+        }
+
+        .history-row:last-child { border: none; }
+        .win-text { color: var(--success); }
+        .loss-text { color: var(--danger); }
+
+        .reset-link {
+            text-align: center;
+            display: block;
+            margin-top: 20px;
+            font-size: 12px;
+            color: var(--text-dim);
+            text-decoration: none;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <div class="card">
-        <h2>📊 Stanje Računa</h2>
-        <div class="grid">
-            <div><label>Trenutna Banka</label><input type="number" id="bank" value="100" onchange="save()"></div>
-            <div><label>Cilj po Tiketu</label><input type="number" id="target" value="10" onchange="save()"></div>
+<div class="wrapper">
+    <div class="glass-card">
+        <div class="header">
+            <h1>Quantum Stake</h1>
+            <div class="status-dot"></div>
         </div>
-        <div class="grid" style="margin-top: 15px;">
-            <div><label>Akumulirani Gubitak</label><div id="lossTotal" style="font-size: 18px; font-weight: bold; color: var(--danger);">0.00 €</div></div>
-            <div><label>Ukupni Profit/Gubitak</label><div id="pnl" style="font-size: 18px; font-weight: bold;">0.00 €</div></div>
+
+        <div class="main-stat-label">Dostupni Balans</div>
+        <div class="bank-amount" id="displayBank">0.00 €</div>
+
+        <div class="grid-stats">
+            <div class="mini-card">
+                <div class="label-sm">Akumulirani Gubitak</div>
+                <div class="val-md" id="displayLoss" style="color: var(--danger);">0.00 €</div>
+            </div>
+            <div class="mini-card">
+                <div class="label-sm">Ukupni P/L</div>
+                <div class="val-md" id="displayPnL">0.00 €</div>
+            </div>
+        </div>
+
+        <div class="input-group">
+            <div class="grid-stats">
+                <div class="input-wrapper">
+                    <label class="label-sm">Početna Banka</label>
+                    <input type="number" id="inputBank" value="100" oninput="initSession()">
+                </div>
+                <div class="input-wrapper">
+                    <label class="label-sm">Cilj Profit</label>
+                    <input type="number" id="inputTarget" value="10" oninput="updateStake()">
+                </div>
+            </div>
+            <div class="input-wrapper">
+                <label class="label-sm">Trenutna Kvota</label>
+                <input type="number" id="inputOdds" value="2.00" step="0.01" oninput="updateStake()">
+            </div>
         </div>
     </div>
 
-    <div class="card">
-        <h2>🎯 Sledeći Korak</h2>
-        <label>Kvota na koju igraš</label>
-        <input type="number" id="odds" value="2.00" step="0.01" oninput="updateStake()">
-        
-        <div class="main-display">
-            <label>PREPORUČENI ULOG</label>
-            <span id="stakeDisplay">0.00 €</span>
-        </div>
-
-        <div class="grid">
-            <button class="btn btn-win" onclick="recordAction('win')">PROŠLO ✅</button>
-            <button class="btn btn-loss" onclick="recordAction('loss')">PALO ❌</button>
-        </div>
-        <button class="btn btn-reset" onclick="resetAll()">RESETUJ SVE PODATKE</button>
+    <div class="stake-banner">
+        <span class="stake-label">Sledeći Ulog</span>
+        <span class="stake-value" id="displayStake">0.00 €</span>
     </div>
 
-    <div class="card">
-        <h2>📜 Istorija Tiketa</h2>
-        <table id="historyTable">
-            <thead>
-                <tr>
-                    <th>Kvota</th>
-                    <th>Ulog</th>
-                    <th>Ishod</th>
-                    <th>Profit</th>
-                </tr>
-            </thead>
-            <tbody id="historyBody"></tbody>
-        </table>
+    <div class="action-btns">
+        <button class="btn btn-win" onclick="handle(true)">Profit ✅</button>
+        <button class="btn btn-loss" onclick="handle(false)">Pad ❌</button>
+    </div>
+
+    <div class="glass-card history-section">
+        <div class="label-sm" style="margin-bottom: 15px;">Poslednje Sesije</div>
+        <div id="historyLog">
+            <!-- Dinamički logovi -->
+        </div>
+        <a class="reset-link" onclick="resetAll()">RESETUJ SVE PODATKE</a>
     </div>
 </div>
 
 <script>
-    let history = JSON.parse(localStorage.getItem('bet_history')) || [];
-    let accumulatedLoss = parseFloat(localStorage.getItem('acc_loss')) || 0;
-    let initialBank = parseFloat(localStorage.getItem('initial_bank')) || 100;
+    let bank = parseFloat(localStorage.getItem('q_bank')) || 100;
+    let initialBank = parseFloat(localStorage.getItem('q_init')) || 100;
+    let accLoss = parseFloat(localStorage.getItem('q_loss')) || 0;
+    let logs = JSON.parse(localStorage.getItem('q_logs')) || [];
 
-    function save() {
-        localStorage.setItem('acc_loss', accumulatedLoss);
-        localStorage.setItem('bet_history', JSON.stringify(history));
-        localStorage.setItem('initial_bank', document.getElementById('bank').value);
-        updateUI();
-    }
-
-    function updateStake() {
-        const target = parseFloat(document.getElementById('target').value);
-        const odds = parseFloat(document.getElementById('odds').value);
-        if (odds <= 1) return;
-        
-        const stake = (accumulatedLoss + target) / (odds - 1);
-        document.getElementById('stakeDisplay').innerText = stake.toFixed(2) + " €";
-        return stake;
-    }
-
-    function recordAction(result) {
-        const stake = updateStake();
-        const odds = parseFloat(document.getElementById('odds').value);
-        let profit = 0;
-
-        if (result === 'win') {
-            profit = (stake * odds) - stake;
-            accumulatedLoss = 0;
-            // Dodajemo profit u banku
-            let currentBank = parseFloat(document.getElementById('bank').value);
-            document.getElementById('bank').value = (currentBank + profit).toFixed(2);
-        } else {
-            profit = -stake;
-            accumulatedLoss += stake;
-            // Oduzimamo ulog iz banke
-            let currentBank = parseFloat(document.getElementById('bank').value);
-            document.getElementById('bank').value = (currentBank - stake).toFixed(2);
-        }
-
-        history.unshift({ odds, stake, result, profit });
-        if (history.length > 10) history.pop(); // Drži zadnjih 10
-        save();
-    }
-
-    function updateUI() {
-        document.getElementById('lossTotal').innerText = accumulatedLoss.toFixed(2) + " €";
-        const currentBank = parseFloat(document.getElementById('bank').value);
-        const diff = currentBank - initialBank;
-        const pnlEl = document.getElementById('pnl');
-        pnlEl.innerText = diff.toFixed(2) + " €";
-        pnlEl.style.color = diff >= 0 ? 'var(--success)' : 'var(--danger)';
-        
-        const tbody = document.getElementById('historyBody');
-        tbody.innerHTML = '';
-        history.forEach(item => {
-            const row = `<tr>
-                <td>${item.odds.toFixed(2)}</td>
-                <td>${item.stake.toFixed(2)}</td>
-                <td class="badge-${item.result}">${item.result.toUpperCase()}</td>
-                <td class="badge-${item.result}">${item.profit.toFixed(2)}</td>
-            </tr>`;
-            tbody.innerHTML += row;
-        });
+    function initSession() {
+        bank = parseFloat(document.getElementById('inputBank').value);
+        initialBank = bank;
+        localStorage.setItem('q_init', initialBank);
         updateStake();
     }
 
+    function updateStake() {
+        const target = parseFloat(document.getElementById('inputTarget').value);
+        const odds = parseFloat(document.getElementById('inputOdds').value);
+        
+        let stake = 0;
+        if (odds > 1) {
+            stake = (accLoss + target) / (odds - 1);
+        }
+        
+        document.getElementById('displayStake').innerText = stake.toFixed(2) + " €";
+        document.getElementById('displayBank').innerText = bank.toFixed(2) + " €";
+        document.getElementById('displayLoss').innerText = accLoss.toFixed(2) + " €";
+        
+        const pnl = bank - initialBank;
+        const pnlEl = document.getElementById('displayPnL');
+        pnlEl.innerText = (pnl >= 0 ? "+" : "") + pnl.toFixed(2) + " €";
+        pnlEl.style.color = pnl >= 0 ? "var(--success)" : "var(--danger)";
+        
+        renderLogs();
+        return stake;
+    }
+
+    function handle(isWin) {
+        const odds = parseFloat(document.getElementById('inputOdds').value);
+        const stake = (accLoss + parseFloat(document.getElementById('inputTarget').value)) / (odds - 1);
+        
+        if (isWin) {
+            const profit = (stake * odds) - stake;
+            bank += profit;
+            accLoss = 0;
+            addLog(odds, stake, 'win');
+        } else {
+            bank -= stake;
+            accLoss += stake;
+            addLog(odds, stake, 'loss');
+        }
+        
+        localStorage.setItem('q_bank', bank);
+        localStorage.setItem('q_loss', accLoss);
+        updateStake();
+    }
+
+    function addLog(odds, stake, res) {
+        logs.unshift({ odds, stake, res, time: new Date().toLocaleTimeString() });
+        if(logs.length > 5) logs.pop();
+        localStorage.setItem('q_logs', JSON.stringify(logs));
+    }
+
+    function renderLogs() {
+        const container = document.getElementById('historyLog');
+        container.innerHTML = logs.map(l => `
+            <div class="history-row">
+                <span style="color: var(--text-dim)">${l.time}</span>
+                <span>@${l.odds.toFixed(2)}</span>
+                <span class="${l.res === 'win' ? 'win-text' : 'loss-text'}">
+                    ${l.res === 'win' ? '+' : '-'}${l.stake.toFixed(2)}€
+                </span>
+            </div>
+        `).join('');
+    }
+
     function resetAll() {
-        if(confirm("Brišeš svu istoriju i resetuješ banku?")) {
+        if(confirm("Potvrdi reset podataka?")) {
             localStorage.clear();
             location.reload();
         }
     }
 
-    // Pokretanje
-    document.getElementById('bank').value = initialBank;
-    updateUI();
+    // Init values
+    document.getElementById('inputBank').value = initialBank;
+    updateStake();
 </script>
 
 </body>

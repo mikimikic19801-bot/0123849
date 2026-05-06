@@ -1,12 +1,10 @@
-const cacheName = 'v1';
-const cacheAssets = ['index.html', 'manifest.json'];
+const CACHE_NAME = 'quantum-v1';
+const ASSETS = ['index.html', 'manifest.json'];
 
-self.addEventListener('install', e => {
-    e.waitUntil(caches.open(cacheName).then(cache => {
-        cache.addAll(cacheAssets);
-    }));
+self.addEventListener('install', event => {
+    event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS)));
 });
 
-self.addEventListener('fetch', e => {
-    e.respondWith(fetch(e.request).catch(() => caches.match(e.request)));
+self.addEventListener('fetch', event => {
+    event.respondWith(fetch(event.request).catch(() => caches.match(event.request)));
 });

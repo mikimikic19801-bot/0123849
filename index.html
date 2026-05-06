@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ultimate Betting Manager</title>
+    <style>
+        :root {
+            --bg: #0b0e14;
+            --card: #161b22;
+            --primary: #58a6ff;
+            --success: #238636;
+            --danger: #da3633;
+            --text: #c9d1d9;
+        }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; }
+        .container { max-width: 600px; margin: auto; }
+        .card { background: var(--card); border: 1px solid #30363d; border-radius: 12px; padding: 20px; margin-bottom: 20px; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        h2 { margin-top: 0; color: var(--primary); font-size: 18px; text-transform: uppercase; }
+        label { display: block; font-size: 12px; color: #8b949e; margin-bottom: 5px; }
+        input { width: 100%; background: #0d1117; border: 1px solid #30363d; border-radius: 6px; padding: 10px; color: white; box-sizing: border-box; font-size: 16px; }
+        .main-display { text-align: center; padding: 20px; background: rgba(88, 166, 255, 0.1); border-radius: 10px; border: 1px dashed var(--primary); margin: 20px 0; }
+        .main-display span { font-size: 36px; font-weight: bold; color: white; display: block; }
+        .btn { border: none; border-radius: 6px; padding: 15px; font-weight: bold; cursor: pointer; font-size: 14px; width: 100%; transition: 0.2s; }
+        .btn-win { background: var(--success); color: white; }
+        .btn-loss { background: var(--danger); color: white; }
+        .btn-reset { background: transparent; color: #8b949e; border: 1px solid #30363d; margin-top: 10px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 13px; }
+        th { text-align: left; color: #8b949e; border-bottom: 1px solid #30363d; padding: 10px; }
+        td { padding: 10px; border-bottom: 1px solid #21262d; }
+        .badge-win { color: var(--success); }
+        .badge-loss { color: var(--danger); }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="card">
+        <h2>📊 Stanje Računa</h2>
+        <div class="grid">
+            <div><label>Trenutna Banka</label><input type="number" id="bank" value="100" onchange="save()"></div>
+            <div><label>Cilj po Tiketu</label><input type="number" id="target" value="10" onchange="save()"></div>
+        </div>
+        <div class="grid" style="margin-top: 15px;">
+            <div><label>Akumulirani Gubitak</label><div id="lossTotal" style="font-size: 18px; font-weight: bold; color: var(--danger);">0.00 €</div></div>
+            <div><label>Ukupni Profit/Gubitak</label><div id="pnl" style="font-size: 18px; font-weight: bold;">0.00 €</div></div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>🎯 Sledeći Korak</h2>
+        <label>Kvota na koju igraš</label>
+        <input type="number" id="odds" value="2.00" step="0.01" oninput="updateStake()">
+        
+        <div class="main-display">
+            <label>PREPORUČENI ULOG</label>
+            <span id="stakeDisplay">0.00 €</span>
+        </div>
+
+        <div class="grid">
+            <button class="btn btn-win" onclick="recordAction('win')">PROŠLO ✅</button>
+            <button class="btn btn-loss" onclick="recordAction('loss')">PALO ❌</button>
+        </div>
+        <button class="btn btn-reset" onclick="resetAll()">RESETUJ SVE PODATKE</button>
+    </div>
+
+    <div class="card">
+        <h2>📜 Istorija Tiketa</h2>
+        <table id="historyTable">
+            <thead>
+                <tr>
+                    <th>Kvota</th>
+                    <th>Ulog</th>
+                    <th>Ishod</th>
+                    <th>Profit</th>
+                </tr>
+            </thead>
+            <tbody id="historyBody"></tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    let history = JSON.parse(localStorage.getItem('bet_history')) || [];
+    let accumulatedLoss = parseFloat(localStorage.getItem('acc_loss')) || 0;
+    let initialBank = parseFloat(localStorage.getItem('initial_bank')) || 100;
+
+    function save() {
+        localStorage.setItem('acc_loss', accumulatedLoss);
+        localStorage.setItem('bet_history', JSON.stringify(history));
+        localStorage.setItem('initial_bank', document.getElementById('bank').value);
+        updateUI();
+    }
+
+    function updateStake() {
+        const target = parseFloat(document.getElementById('target').value);
+        const odds = parseFloat(document.getElementById('odds').value);
+        if (odds <= 1) return;
+        
+        const stake = (accumulatedLoss + target) / (odds - 1);
+        document.getElementById('stakeDisplay').innerText = stake.toFixed(2) + " €";
+        return stake;
+    }
+
+    function recordAction(result) {
+        const stake = updateStake();
+        const odds = parseFloat(document.getElementById('odds').value);
+        let profit = 0;
+
+        if (result === 'win') {
+            profit = (stake * odds) - stake;
+            accumulatedLoss = 0;
+            // Dodajemo profit u banku
+            let currentBank = parseFloat(document.getElementById('bank').value);
+            document.getElementById('bank').value = (currentBank + profit).toFixed(2);
+        } else {
+            profit = -stake;
+            accumulatedLoss += stake;
+            // Oduzimamo ulog iz banke
+            let currentBank = parseFloat(document.getElementById('bank').value);
+            document.getElementById('bank').value = (currentBank - stake).toFixed(2);
+        }
+
+        history.unshift({ odds, stake, result, profit });
+        if (history.length > 10) history.pop(); // Drži zadnjih 10
+        save();
+    }
+
+    function updateUI() {
+        document.getElementById('lossTotal').innerText = accumulatedLoss.toFixed(2) + " €";
+        const currentBank = parseFloat(document.getElementById('bank').value);
+        const diff = currentBank - initialBank;
+        const pnlEl = document.getElementById('pnl');
+        pnlEl.innerText = diff.toFixed(2) + " €";
+        pnlEl.style.color = diff >= 0 ? 'var(--success)' : 'var(--danger)';
+        
+        const tbody = document.getElementById('historyBody');
+        tbody.innerHTML = '';
+        history.forEach(item => {
+            const row = `<tr>
+                <td>${item.odds.toFixed(2)}</td>
+                <td>${item.stake.toFixed(2)}</td>
+                <td class="badge-${item.result}">${item.result.toUpperCase()}</td>
+                <td class="badge-${item.result}">${item.profit.toFixed(2)}</td>
+            </tr>`;
+            tbody.innerHTML += row;
+        });
+        updateStake();
+    }
+
+    function resetAll() {
+        if(confirm("Brišeš svu istoriju i resetuješ banku?")) {
+            localStorage.clear();
+            location.reload();
+        }
+    }
+
+    // Pokretanje
+    document.getElementById('bank').value = initialBank;
+    updateUI();
+</script>
+
+</body>
+</html>
